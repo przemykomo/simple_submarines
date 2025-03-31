@@ -33,6 +33,11 @@ public class SubEntityRenderer extends EntityRenderer<SubmarineEntity, Submarine
         poseStack.scale(-1.0F, -1.0F, 1.0F);
         poseStack.translate(0.0F, -1F, 0.0F);
 
+        float f = renderState.hurtTime;
+        if (f > 0.0F) {
+            poseStack.mulPose(Axis.XP.rotationDegrees(Mth.sin(f) * f * renderState.damageTime / 10.0F * (float)renderState.hurtDir));
+        }
+
         this.model.setupAnim(renderState);
         RenderType rendertype = model.renderType(TEXTURE);
         VertexConsumer vertexconsumer = bufferSource.getBuffer(rendertype);
@@ -51,5 +56,8 @@ public class SubEntityRenderer extends EntityRenderer<SubmarineEntity, Submarine
     public void extractRenderState(SubmarineEntity entity, SubmarineRenderState reusedState, float partialTick) {
         super.extractRenderState(entity, reusedState, partialTick);
         reusedState.yRot = Mth.lerp(partialTick, entity.yRotO, entity.getYRot());
+        reusedState.hurtTime = (float)entity.getHurtTime() - partialTick;
+        reusedState.hurtDir = entity.getHurtDir();
+        reusedState.damageTime = Math.max(entity.getDamage() - partialTick, 0.0F);
     }
 }

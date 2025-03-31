@@ -14,13 +14,16 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.VehicleEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 
 @SuppressWarnings("resource")
-public class SubmarineEntity extends Entity {
+public class SubmarineEntity extends VehicleEntity {
 
     public static final EntityDataAccessor<Byte> MOVE_UP = SynchedEntityData.defineId(SubmarineEntity.class, EntityDataSerializers.BYTE);
     public static final EntityDataAccessor<Byte> MOVE_FORWARD = SynchedEntityData.defineId(SubmarineEntity.class, EntityDataSerializers.BYTE);
@@ -32,29 +35,41 @@ public class SubmarineEntity extends Entity {
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
         builder.define(MOVE_UP, (byte) 0);
         builder.define(MOVE_FORWARD, (byte) 0);
         builder.define(ROTATE_RIGHT, (byte) 0);
     }
 
     @Override
-    public boolean hurtServer(ServerLevel serverLevel, DamageSource damageSource, float v) {
-        return true;
+    public void animateHurt(float p_376617_) {
+        this.setHurtDir(-this.getHurtDir());
+        this.setHurtTime(10);
+        this.setDamage(this.getDamage() * 11.0F);
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag compoundTag) {
-
+    protected Item getDropItem() {
+        return SimpleSubmarines.SUB_ITEM.get();
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag compoundTag) {
+    protected void readAdditionalSaveData(CompoundTag compoundTag) {}
 
-    }
+    @Override
+    protected void addAdditionalSaveData(CompoundTag compoundTag) {}
 
     @Override
     public void tick() {
         super.tick();
+
+        if (this.getHurtTime() > 0) {
+            this.setHurtTime(this.getHurtTime() - 1);
+        }
+
+        if (this.getDamage() > 0.0F) {
+            this.setDamage(this.getDamage() - 1.0F);
+        }
 
         if (isInWater()) {
             if (getControllingPassenger() instanceof Player) {
@@ -116,7 +131,7 @@ public class SubmarineEntity extends Entity {
 
     @Override
     public boolean isPickable() {
-        return true;
+        return !isRemoved();
     }
 
     @Nullable
@@ -138,5 +153,25 @@ public class SubmarineEntity extends Entity {
 
     public void setRotate(byte right) {
         entityData.set(ROTATE_RIGHT, right);
+    }
+
+    public void setInitialPos(double x, double y, double z) {
+        this.setPos(x, y, z);
+        this.xo = x;
+        this.yo = y;
+        this.zo = z;
+    }
+
+    @Override
+    public ItemStack getPickResult() {
+        return getDropItem().getDefaultInstance();
+    }
+
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+        if (!hasPassenger(source.getDirectEntity())) {
+            return super.hurtServer(level, source, amount);
+        }
+        return false;
     }
 }

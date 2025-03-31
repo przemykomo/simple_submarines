@@ -1,5 +1,7 @@
 {
-  "itemGroup.simplesubs": "Example Mod Tab",
-  "block.simplesubs.example_block": "Example Block",
-  "item.simplesubs.example_item": "Example Item"
+  "itemGroup.simplesubs": "Simple Submarines",
+  "item.simplesubs.sub": "Submarine",
+  "item.simplesubs.uboat": "U-Boat",
+  "entity.simplesubs.submarine": "Submarine",
+  "entity.simplesubs.uboat": "U-Boat"
 }

@@ -17,6 +17,7 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import xyz.przemyk.simplesubs.client.SubEntityRenderer;
 import xyz.przemyk.simplesubs.client.SubmarineModel;
@@ -33,12 +34,7 @@ public class SimpleSubmarines {
     public static final String MODID = "simplesubs";
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
     public static final DeferredRegister.Entities ENTITY_TYPES = DeferredRegister.createEntities(MODID);
-
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> SUBS_TAB = CREATIVE_MODE_TABS.register("example_tab", () -> CreativeModeTab.builder()
-            .title(Component.translatable("itemGroup.simplesubs"))
-            .withTabsBefore(CreativeModeTabs.COMBAT)
-            .icon(Items.ACACIA_BOAT::getDefaultInstance)
-            .displayItems((parameters, output) -> output.accept(Items.ACACIA_BOAT)).build());
+    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
 
     public static final Supplier<EntityType<SubmarineEntity>> SUBMARINE = ENTITY_TYPES.registerEntityType(
         "submarine", SubmarineEntity::new, MobCategory.MISC,
@@ -56,6 +52,7 @@ public class SimpleSubmarines {
                 new Vec3(-10 / 16.0, 10 / 16.0, 30 / 16.0), new Vec3(8 / 16.0, 10 / 16.0, 30 / 16.0),
                 new Vec3(-10 / 16.0, 10 / 16.0, 108 / 16.0), new Vec3(8 / 16.0, 10 / 16.0, 108 / 16.0)));
 
+
     public static final ModelLayerLocation SUB_LAYER = new ModelLayerLocation(
         ResourceLocation.fromNamespaceAndPath(MODID, "submarine"),
         "main"
@@ -66,9 +63,18 @@ public class SimpleSubmarines {
         "main"
     );
 
+    public static final DeferredItem<SubItem> SUB_ITEM = ITEMS.registerItem("sub", properties -> new SubItem(SUBMARINE.get(), properties));
+
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> SUBS_TAB = CREATIVE_MODE_TABS.register("simplesubs", () -> CreativeModeTab.builder()
+        .title(Component.translatable("itemGroup.simplesubs"))
+//        .withTabsBefore(CreativeModeTabs.COMBAT)
+        .icon(() -> SUB_ITEM.get().getDefaultInstance())
+        .displayItems((parameters, output) -> output.accept(SUB_ITEM)).build());
+
     public SimpleSubmarines(IEventBus modEventBus, ModContainer modContainer) {
         CREATIVE_MODE_TABS.register(modEventBus);
         ENTITY_TYPES.register(modEventBus);
+        ITEMS.register(modEventBus);
         modEventBus.addListener(SimpleSubmarines::registerEntityRenderers);
         modEventBus.addListener(SimpleSubmarines::registerLayerDefinitions);
         modEventBus.addListener(SimpleSubmarines::registerPayloads);
